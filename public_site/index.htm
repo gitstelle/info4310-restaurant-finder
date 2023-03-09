@@ -43,6 +43,7 @@
         </div>
         <div class="list">
             <h1> Results </h1>
+            <p id ='yelp'></p>
             <div id=listContainer>
 
             </div>
@@ -370,10 +371,12 @@
 
                 }
 
-                let table = d3.select("#listContainer").append("table");
+                let table= d3.select("#listContainer").append("table");
+                let yelp = d3.select('#yelp')
 
                 function generateRestaurantList(circles) {
-
+                    yelp.text("")
+                    yelp.text("Click on a result below for its Yelp page!")
                     table.selectAll('tr').remove();
                     table.selectAll('td').remove();
 
