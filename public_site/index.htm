@@ -148,7 +148,11 @@
                 }
                 var checkedLabels = []; // list of stuff that is checked
                 function subFilter() {
+                    table.selectAll('tr').remove();
+                    table.selectAll('td').remove();
 
+
+               
                     // a function that adds and removes points based on the checkboxes input
 
                     f2Label = d3.select(this).datum()
