@@ -16,10 +16,13 @@
 
                         <select name="select" id="selectDistance">
                             <option value="fiveminradius">0.25 miles (5 min walk)</option>
-                            <option value selected="tenminradius">0.5 miles (10 min walk)</option>
+                            <option value ="tenminradius" selected>0.5 miles (10 min walk)</option>
                             <option value="twentyminradius">1 mile (20 min walk)</option>
                             <option value="thirtyminradius">1.5 miles (30 min walk)</option>
                         </select>
+                        <div id = resetButtonContainer>
+
+                        </div>
                     </div>
                 </div>
                 <div id=filter1>
@@ -64,7 +67,7 @@
 
                 let f1ButtonsData = [];
                 f1Label = ['market', 'cb', 'dd', 'restaurant'];
-                f1H2 = ['&#129382', '&#9749', '&#127866', '&#127836'] //emojis
+                f1H2 = ['&#129382', '&#9749', '&#127866', '&#127843'] //emojis
                 f1H3 = ['Markets', 'Cafes & Bakeries', 'Desserts & Drinks', 'Restaurant'] //h3 labels
 
                 for (let i = 0; i < f1Label.length; i++) {
@@ -81,7 +84,7 @@
 
 
                 // reset button
-                const resetButton = d3.select('div#header')
+                const resetButton = d3.select('div#resetButtonContainer')
                 resetButton.append('button').append('text').text("Reset Map");
                 resetButton.on('click', resetMap);
 
@@ -236,7 +239,7 @@
                         .join("circle")
                         .attr("class", "dots")
                         .attr("r", 5)
-                        .attr("opacity", '.75')
+                        .attr("opacity", '.6')
                         .attr("cx", d => projection(d.POSITION)[0])
                         .attr("cy", d => projection(d.POSITION)[1])
                         .attr("fill", d => dotColor(d.filter1));
@@ -306,13 +309,14 @@
 
                 }
                 var selected = tenminradius;
+                console.log(selected);
 
                 d3.select('select').on("change", function () {
-                    selected = d3.select("#selectDistance").node().value;
-                    if (selected === "fiveminradius") { selected = fiveminradius }
-                    if (selected === "tenminradius") { selected = tenminradius }
-                    if (selected === "twentyminradius") { selected = twentyminradius }
-                    if (selected === "thirtyminradius") { selected = thirtyminradius }
+                    selectedRadius = d3.select("#selectDistance").node().value;
+                    if (selectedRadius === "fiveminradius") { selected = fiveminradius }
+                    if (selectedRadius === "tenminradius") { selected = tenminradius }
+                    if (selectedRadius === "twentyminradius") { selected = twentyminradius }
+                    if (selectedRadius === "thirtyminradius") { selected = thirtyminradius }
 
                     viewport.selectAll("circle.radius_circle").attr("r", selected);
 

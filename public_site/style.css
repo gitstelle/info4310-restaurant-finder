@@ -168,19 +168,22 @@ svg#map {
 }
 
 .rowR {
-    background-color:#b4dcfb;
-    border-top: 12px solid black;
-    border-bottom: 12px solid transparent;
+    background-color:#c2f0ff;
+    border: 3px solid  #87d8f3;
+    /* border-top: 12px solid black;
+    border-bottom: 12px solid transparent; */
 }
 
 .rowR a {
     text-decoration: none; 
     color: black;
+    display:flex;
+    flex-direction: column;
 
 }
 
 .rowR:hover, .rowR:focus {
-    background-color: #85bbe4;
+    background-color: #87d8f3;
 }
 
 .tooltip {
@@ -197,7 +200,12 @@ svg#map {
 }
 
 table{
+    border-collapse: collapse;
+    border-spacing: 4px;
     width:220px;
-    padding:2px;
     /* text-align: center; */
+}
+
+table div {
+
 }
