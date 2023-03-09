@@ -65,15 +65,26 @@ h1 {
     flex-shrink: 0; */
     min-width:90px;
     height: 110px;
-    border: .5px solid black;
+    border: 2px solid lightgray;
     border-radius: 15px;
     padding:1%;
     margin:2%;
     background-color: #f0f0f0;
 }
 
+#filter1 button:hover {
+    background-color: lightgray;
+}
+
+button{
+    border: 2px solid lightgray;
+    padding:2px;
+
+}
+
 button:hover {
     background-color: lightgray;
+    border: 2px solid lightgray;
     cursor: pointer;
 }
 
@@ -105,7 +116,7 @@ button:hover {
 
 select#selectDistance {
     /* margin-right:10px; */
-    width: 150px;
+    width: 160px;
     margin-right: auto;
     margin-left: auto;
 }
@@ -114,7 +125,7 @@ select#selectDistance {
     display:flex;
     flex-flow: column wrap;
     margin-left:10px;
-    height:150px;
+    height:160px;
 }
 
 /* label {
@@ -150,7 +161,7 @@ fieldset {
 #map {
     max-width: 100%;
     max-height: auto;
-    outline: 2px solid lightgrey;
+    /* outline: 2px solid lightgrey; */
     border-radius: 20px;
 }
 
@@ -165,33 +176,52 @@ fieldset {
     fill: none;
 }
 
-.state-outline {
+svg#map {
+    background-color:rgb(220, 220, 220);
+}
+
+.bos-outline {
     /* stroke: darkgrey; */
     stroke-width: .5px;
-    fill: lightgray;
+    fill: rgb(229, 229, 229);
 }
 
 .list {
     margin: 40px;
 }
 
-.rowR{
-    background-color:lightgray;
-    border-color: black;
+.rowR {
+    background-color:#b4dcfb;
+    border-top: 12px solid black;
+    border-bottom: 12px solid transparent;
 }
 
 .rowR a {
     /* background-color: lightgray; */
     text-decoration: none; 
     color: black;
+
 }
 
 .rowR:hover, .rowR:focus {
-    background: darkgray;
+    background-color: #85bbe4;
+}
+
+.tooltip {
+    /* text-transform: uppercase; */
+    font-weight: bold;
 }
 
 
 #listContainer {
     overflow-y: auto;
     height:700px;
+    
+
+}
+
+table{
+    width:220px;
+    padding:2px;
+    /* text-align: center; */
 }

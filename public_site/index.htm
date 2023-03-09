@@ -9,7 +9,7 @@
         <div class="left_panel">
             <div class="filter">
                 <div id='header'>
-                    <h1> &#128523 Boston Bites </h1>
+                    <h1>&#128523 Boston Bites </h1>
                     <div>
                         <label for="selectDistance">Distance:</label>
 
@@ -56,11 +56,12 @@
 
 
                 let data = await d3.csv("new_boston.csv", d3.autotype);
+                console.log(data)
                 const boston = await d3.json("output-6.json");
 
                 let f1ButtonsData = [];
                 f1Label = ['market', 'cb', 'dd', 'restaurant'];
-                f1H2 = ['&#129382', '&#9749', '&#127863', '&#127829'] //emojis
+                f1H2 = ['&#129382', '&#9749', '&#127866', '&#127836'] //emojis
                 f1H3 = ['Markets', 'Cafes & Bakeries', 'Desserts & Drinks', 'Restaurant'] //h3 labels
 
                 for (let i = 0; i < f1Label.length; i++) {
@@ -188,8 +189,8 @@
                 var zips = topojson.feature(boston, boston.objects.Boston_Street_Segments);
                 var zipsMesh = topojson.mesh(boston, boston.objects.Boston_Street_Segments);
 
-                var states = topojson.feature(boston, boston.objects.City_of_Boston_Boundary);
-                var stateMesh = topojson.mesh(boston, boston.objects.City_of_Boston_Boundary);
+                var bos = topojson.feature(boston, boston.objects.City_of_Boston_Boundary);
+                var bosMesh = topojson.mesh(boston, boston.objects.City_of_Boston_Boundary);
 
                 var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], zips);
                 var path = d3.geoPath().projection(projection);
@@ -200,8 +201,8 @@
 
 
                 viewport.append("path")
-                    .datum(stateMesh)
-                    .attr("class", "state-outline")
+                    .datum(bosMesh)
+                    .attr("class", "bos-outline")
                     .attr("d", path);
 
                 viewport.selectAll(".zip").data(zips.features)
@@ -218,14 +219,14 @@
 
 
                 // dot color scale
-                dotColor = d3.scaleOrdinal(['#663300', '#2bda6e', '#cc00ff', '#ff7300']).domain(['cb', 'market', 'dd', 'restaurant'])
+                dotColor = d3.scaleOrdinal(['#804000','#00b300', '#ffc800', 'red']).domain(['cb', 'market', 'dd', 'restaurant'])
 
                 function drawPoints(data) {
                     viewport.selectAll("circle").data(data)
                         .join("circle")
                         .attr("class", "dots")
                         .attr("r", 5)
-                        .attr("opacity", '.5')
+                        .attr("opacity", '.7')
                         .attr("cx", d => projection(d.POSITION)[0])
                         .attr("cy", d => projection(d.POSITION)[1])
                         .attr("fill", d => dotColor(d.filter1));
@@ -238,14 +239,20 @@
 
                 map.call(mapZoom);
 
+                var transformRatio = 1; // a glabal var to save the transparency factor if someone clicks again while zoomed in
+
                 function mapZoomed(event) {
                     viewport.attr("transform", event.transform);
+                    transformRatio = event.transform.k;
 
                     viewport.select(".zip-outline")
                         .style("stroke-width", 0.5 / event.transform.k);
 
                     viewport.selectAll("circle.dots")
-                        .attr("r", 5 / event.transform.k);
+                        .attr("r", 5 / event.transform.k)
+                        // .attr('stroke-width', 2/event.transform.k);
+                    viewport.selectAll('.radius_circle')
+                            .attr('fill-opacity', .5/event.transform.k).style('stroke-opacity',.5)
                 }
 
 
@@ -312,8 +319,11 @@
                         .attr("cx", d3.pointer(event)[0])
                         .attr("cy", d3.pointer(event)[1])
                         .attr("r", selected)
-                        .attr("fill", "grey")
-                        .attr("opacity", 0.5)
+                        .attr("fill", "#08b0e7")
+                        .style("stroke", "#08b0e7")
+                        .style('stroke-width', 1)
+                        .style('stroke-opacity',.5)
+                        .attr("fill-opacity", 0.5/transformRatio)
                         .attr('cursor', 'all-scroll')
                         .call(drag);
 
@@ -367,9 +377,9 @@
 
                                 previousR = d3.select(kvPairs[key]).attr("r")
 
-                                d3.select(kvPairs[key]).attr("r", previousR * 2);
+                                // d3.select(kvPairs[key]).attr("r", previousR * 2);
                                 d3.select(kvPairs[key]).attr("opacity", .8);
-                                d3.select(kvPairs[key]).attr("border", "black");
+                                d3.select(kvPairs[key]).attr("stroke", "black").attr('stroke-width',4/transformRatio);
 
                                 map.append("text")
                                     .attr("class", "tooltip")
@@ -379,7 +389,8 @@
 
                             })
                             .on("mouseout", function (event) {
-                                d3.select(kvPairs[key]).attr("r", previousR);
+                                d3.select(kvPairs[key]).attr("r", previousR).attr('stroke','none')
+                                
                                 d3.selectAll(".tooltip").remove()
 
                             })
