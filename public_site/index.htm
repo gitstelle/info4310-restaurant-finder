@@ -1,0 +1,409 @@
+<html>
+    <head><title>&#128523 Boston Bites</title></head>
+
+<body>
+    <link rel="stylesheet" href="style.css">
+    <script src="https://d3js.org/d3.v7.min.js"></script>
+    <script src="https://d3js.org/topojson.v3.min.js"></script>
+    <div class="container">
+        <div class="left_panel">
+            <div class="filter">
+                <div id='header'>
+                    <h1> &#128523 Boston Bites </h1>
+                    <div>
+                        <label for="selectDistance">Distance:</label>
+
+
+                        <select name="select" id="selectDistance">
+                            <option value="fiveminradius">0.25 miles (5 min walk)</option>
+                            <option value selected="tenminradius">0.5 miles (10 min walk)</option>
+                            <option value="twentyminradius">1 mile (20 min walk)</option>
+                            <option value="thirtyminradius">1.5 miles (30 min walk)</option>
+                        </select>
+                    </div>
+                </div>
+                <div id=filter1>
+                    <!-- buttons created using d3 -->
+                </div>
+                <div id=filter2>
+                </div>
+            </div>
+
+            <div id=mapContainer>
+                <svg id="map" width=1000 height=700></svg>
+            </div>
+
+
+        </div>
+        <div class="list">
+            <h1> Results </h1>
+            <div id=listContainer>
+
+            </div>
+
+        </div>
+        <script>
+
+            const getData = async function () {
+                const map = d3.select("svg#map");
+                const width = map.attr("width");
+                const height = map.attr("height");
+                const margin = { top: 30, right: 20, bottom: 30, left: 20 };
+                const mapWidth = width - margin.left - margin.right;
+                const mapHeight = height - margin.top - margin.bottom;
+                const viewport = map.append("g")
+                    .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
+
+
+                let data = await d3.csv("new_boston.csv", d3.autotype);
+                const boston = await d3.json("output-6.json");
+
+                let f1ButtonsData = [];
+                f1Label = ['market', 'cb', 'dd', 'restaurant'];
+                f1H2 = ['&#129382', '&#9749', '&#127863', '&#127829'] //emojis
+                f1H3 = ['Markets', 'Cafes & Bakeries', 'Desserts & Drinks', 'Restaurant'] //h3 labels
+
+                for (let i = 0; i < f1Label.length; i++) {
+                    dict = { label: f1Label[i], h2: f1H2[i], h3: f1H3[i] };
+                    f1ButtonsData.push(dict);
+                }
+                const f1div = d3.select('div#filter1')
+                f1Buttons = f1div.selectAll('button').data(f1ButtonsData).join('button')
+                    .on('click', filter1)
+
+                f1Buttons.append('h2').html(d => d.h2)
+                    .append('h3').text(d => d.h3)
+
+
+
+                // reset button
+                const resetButton = d3.select('div#header')
+                resetButton.append('button').append('text').text("Reset Map").on('click', resetMap);
+
+                function resetMap() {
+                    drawPoints(data);
+                    f1Buttons.style('background-color', '#f0f0f0') // reset colors to default
+
+                }
+
+                var tryingStuff = null; // a holder to get a save the filter1 data into a global var
+
+                function filter1() {
+                    // a function that filters the dataset based on the buttons in filter1.
+                    // 'cb' = cafes, bakeries
+                    // 'market' = market
+                    // 'dd' = drinks, desserts
+                    // 'restaurant' = restaurant
+                    // these strings returned by the buttons directly correlate to 'filter1' attr in data.
+                    // returns: filtered data
+
+                    table.selectAll('tr').remove();
+                    table.selectAll('td').remove();
+
+                    f1Buttons.style('background-color', '#f0f0f0') // reset colors to default
+                    button = d3.select(this)
+                    button.style('background-color', 'lightgray') // darken button if selected
+                    f1Type = d3.select(this).datum().label; // this is the filter criteria
+
+                    filteredData = data.filter(d => d['filter1'] == f1Type);
+
+                    drawPoints(filteredData);
+
+                    const f2div = d3.select('div#filter2')
+                    if (f1Type == 'restaurant' || f1Type == 'dd') {
+
+                        checkedLabels = [] // reset global variable filters 
+
+                        const filter2 = [...new Set(d3.map(filteredData, d => d.filter2))];
+
+                        f2div.selectAll('div.checkbox').remove()
+
+                        // CREDIT: stack overflow checkboxes
+                        // https://stackoverflow.com/questions/52598074/d3-checkbox-label-input-order
+
+                        checkboxes = f2div.selectAll('.checkbox').data(filter2)
+                            .enter()
+                            .append('div')
+                            .attr('class', 'checkbox')
+                        checkboxes.append('input')
+                            .attr('type', 'checkbox')
+                            .attr('id', (d, i) => i)
+                            .on('change', subFilter)
+                        checkboxes.append('label')
+                            .attr('for', (d, i) => i)
+                            .text(d => d)
+
+                    }
+
+                    // remove checkboxes if others are selected
+
+                    if (f1Type == 'cb' || f1Type == 'market') {
+                        f2div.selectAll('div.checkbox').remove()
+                    }
+
+                    tryingStuff = filteredData;
+                }
+                var checkedLabels = []; // list of stuff that is checked
+                function subFilter() {
+
+                    // a function that adds and removes points based on the checkboxes input
+
+                    f2Label = d3.select(this).datum()
+                    f2LabelIndex = checkedLabels.indexOf(f2Label)
+                    // check if f2Label is in checkedLabels, add it
+                    if (f2LabelIndex === -1) {
+                        checkedLabels.push(f2Label);
+                    }
+                    if (f2LabelIndex > -1) {
+                        checkedLabels.splice(f2LabelIndex, 1);
+                    }
+
+                    if (checkedLabels.length == 0) {
+                        drawPoints(tryingStuff);
+                    }
+
+                    else {
+                        // filtering the checkbox data
+                        // basically estelle couldn't figure out how to filter with a list
+                        // so it makes subset using d3.filter for each item in checkedLabels and then concats it
+                        moreFilteredData = [];
+                        for (let i = 0; i < checkedLabels.length; i++) {
+                            checkData = tryingStuff.filter(d => d['filter2'] == checkedLabels[i]);
+                            moreFilteredData = moreFilteredData.concat(checkData);
+                            drawPoints(moreFilteredData);
+                        }
+                    }
+
+
+                }
+                data.forEach((d) => {
+                    d.LAT = parseInt(d.latitude)
+                    d.LONG = parseInt(d.longitude)
+                    d.RATING = parseInt(d.rating)
+                    d.REVIEW = parseInt(d.review_count)
+                    d.CAT = JSON.parse(d.categories)
+                    d.LOCATION = JSON.parse(d.location)
+                    d.POSITION = [d.LOCATION['coordinate']['longitude'], d.LOCATION['coordinate']['latitude']];
+                })
+                var zips = topojson.feature(boston, boston.objects.Boston_Street_Segments);
+                var zipsMesh = topojson.mesh(boston, boston.objects.Boston_Street_Segments);
+
+                var states = topojson.feature(boston, boston.objects.City_of_Boston_Boundary);
+                var stateMesh = topojson.mesh(boston, boston.objects.City_of_Boston_Boundary);
+
+                var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], zips);
+                var path = d3.geoPath().projection(projection);
+
+                viewport.append("path")
+                    .attr("class", "graticule")
+                    .attr("d", path(d3.geoGraticule10()));
+
+
+                viewport.append("path")
+                    .datum(stateMesh)
+                    .attr("class", "state-outline")
+                    .attr("d", path);
+
+                viewport.selectAll(".zip").data(zips.features)
+                    .join("path")
+                    .attr("class", "zip")
+                    .attr("fill", "None")
+                    .attr('stroke', 'None')
+                    .attr("d", path);
+
+                viewport.append("path")
+                    .datum(zipsMesh)
+                    .attr("class", "zip-outline")
+                    .attr("d", path);
+
+
+                // dot color scale
+                dotColor = d3.scaleOrdinal(['#663300', '#2bda6e', '#cc00ff', '#ff7300']).domain(['cb', 'market', 'dd', 'restaurant'])
+
+                function drawPoints(data) {
+                    viewport.selectAll("circle").data(data)
+                        .join("circle")
+                        .attr("class", "dots")
+                        .attr("r", 5)
+                        .attr("opacity", '.5')
+                        .attr("cx", d => projection(d.POSITION)[0])
+                        .attr("cy", d => projection(d.POSITION)[1])
+                        .attr("fill", d => dotColor(d.filter1));
+                }
+
+                var mapZoom = d3.zoom()
+                    .scaleExtent([1, 20])
+                    .translateExtent([[-50, -50], [mapWidth + 50, mapHeight + 50]]) 
+                    .on("zoom", mapZoomed);
+
+                map.call(mapZoom);
+
+                function mapZoomed(event) {
+                    viewport.attr("transform", event.transform);
+
+                    viewport.select(".zip-outline")
+                        .style("stroke-width", 0.5 / event.transform.k);
+
+                    viewport.selectAll("circle.dots")
+                        .attr("r", 5 / event.transform.k);
+                }
+
+
+
+                // calculating circle radius
+                // distance between pointA and pointB is 0.5 miles which the average person can walk in 10 minutes
+                pointA = [42.361381268372234, -71.06298917928021]
+                pointB = [42.35936868192185, -71.06992685719246]
+
+
+                pointAxpixel = projection(pointA)[0]
+                pointAypixel = projection(pointA)[1]
+
+                pointBxpixel = projection(pointB)[0]
+                pointBypixel = projection(pointB)[1]
+
+
+                tenminradius = pointAxpixel - pointBxpixel
+                fiveminradius = tenminradius / 2
+                twentyminradius = tenminradius * 2
+                thirtyminradius = tenminradius * 3
+
+
+
+                // resource: https://www.d3indepth.com/interaction/
+
+                viewport.on('hover', function () {
+                    d3.select(this).attr('cursor', 'all-scroll')
+                })
+
+                let drag = d3.drag()
+                    .on('drag', handleDrag)
+
+                function handleDrag(e) {
+                    e.subject.x = e.x;
+                    e.subject.y = e.y;
+                    d3.select(this)
+                        .attr("cx", e.subject.x)
+                        .attr("cy", e.subject.y);
+                    updateCircleSelection(e.subject.x, e.subject.y);
+
+                }
+                var selected = tenminradius;
+
+                d3.select('select').on("change", function () {
+                    selected = d3.select("#selectDistance").node().value;
+                    if (selected === "fiveminradius") { selected = fiveminradius }
+                    if (selected === "tenminradius") { selected = tenminradius }
+                    if (selected === "twentyminradius") { selected = twentyminradius }
+                    if (selected === "thirtyminradius") { selected = thirtyminradius }
+
+                    viewport.selectAll("circle.radius_circle").attr("r", selected);
+
+                })
+
+
+
+                viewport.on("click", function (event) {
+
+                    viewport.selectAll("circle.radius_circle").remove();
+
+                    dots = viewport.append("circle")
+                        .attr("class", "radius_circle")
+                        .attr("cx", d3.pointer(event)[0])
+                        .attr("cy", d3.pointer(event)[1])
+                        .attr("r", selected)
+                        .attr("fill", "grey")
+                        .attr("opacity", 0.5)
+                        .attr('cursor', 'all-scroll')
+                        .call(drag);
+
+                    updateCircleSelection(d3.pointer(event)[0], d3.pointer(event)[1]);
+
+                })
+                // Find what restaurants are contained within the circle
+                function updateCircleSelection(x, y) {
+
+                    x1 = x
+                    y1 = y
+
+
+                    highlightedPoints = viewport.selectAll("circle.dots").filter(function (d) {
+                
+                        current_circle_radius = viewport.selectAll("circle.radius_circle").attr("r")
+
+                        x2 = projection(d.POSITION)[0]
+                        y2 = projection(d.POSITION)[1]
+
+                        dist = Math.sqrt(
+                            (x1 - x2) ** 2 +
+                            (y1 - y2) ** 2);
+
+                        return dist <= current_circle_radius;
+                    });
+
+                    // call function to generate list of restaurants
+                    generateRestaurantList(highlightedPoints);
+
+                }
+
+                let table = d3.select("#listContainer").append("table");
+
+                function generateRestaurantList(circles) {
+
+                    table.selectAll('tr').remove();
+                    table.selectAll('td').remove();
+
+                    let kvPairs = Object.assign({}, circles._groups[0]);
+
+
+                    previousR = 0;
+
+                    Object.keys(kvPairs).forEach(function (key) {
+                        row = table.append("tr")
+                            .attr('class', 'rowR')
+                            .on("mouseover", function (event) {
+
+                                d3.selectAll(".tooltip").remove()
+
+                                previousR = d3.select(kvPairs[key]).attr("r")
+
+                                d3.select(kvPairs[key]).attr("r", previousR * 2);
+                                d3.select(kvPairs[key]).attr("opacity", .8);
+                                d3.select(kvPairs[key]).attr("border", "black");
+
+                                map.append("text")
+                                    .attr("class", "tooltip")
+                                    .text(function (d) { return d3.select(kvPairs[key]).datum()['name'] })
+                                    .attr("x", d3.select(kvPairs[key]).attr("cx"))
+                                    .attr("y", d3.select(kvPairs[key]).attr("cy"));
+
+                            })
+                            .on("mouseout", function (event) {
+                                d3.select(kvPairs[key]).attr("r", previousR);
+                                d3.selectAll(".tooltip").remove()
+
+                            })
+                            .append('a')
+                            .attr('href', d3.select(kvPairs[key]).datum()['url'])
+                            .attr('target', '_blank');
+                        row.append("strong").text(d3.select(kvPairs[key]).datum()['name']);
+
+                        ratingrow = row.append("div").attr("class", "subRow");
+                        ratingrow.append("td").text("rating:");
+                        ratingrow.append("td").text(d3.select(kvPairs[key]).datum()['rating']);
+
+                        addressrow = row.append("tr");
+                        addressrow.append("td").text("address:");
+                        addressrow.append("td").text(d3.select(kvPairs[key]).datum()['LOCATION']['address']);
+                    });
+                }
+
+                drawPoints(data);
+
+            };
+
+            getData()
+        </script>
+</body>
+
+</html>
