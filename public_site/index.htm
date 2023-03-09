@@ -9,17 +9,20 @@
         <div class="left_panel">
             <div class="filter">
                 <div id='header'>
-                    <h1> &#128523 Boston Bites </h1>
+                    <h1>&#128523 Boston Bites </h1>
                     <div>
                         <label for="selectDistance">Distance:</label>
 
 
                         <select name="select" id="selectDistance">
                             <option value="fiveminradius">0.25 miles (5 min walk)</option>
-                            <option value selected="tenminradius">0.5 miles (10 min walk)</option>
+                            <option value ="tenminradius" selected>0.5 miles (10 min walk)</option>
                             <option value="twentyminradius">1 mile (20 min walk)</option>
                             <option value="thirtyminradius">1.5 miles (30 min walk)</option>
                         </select>
+                        <div id = resetButtonContainer>
+
+                        </div>
                     </div>
                 </div>
                 <div id=filter1>
@@ -29,7 +32,7 @@
                 </div>
             </div>
             <div class="instructions">
-                <p>Click and drag to find a place to eat!</p>
+                <p>Select a distance, then click and drag to find a place to eat!</p>
             </div>
 
             <div id=mapContainer>
@@ -40,6 +43,7 @@
         </div>
         <div class="list">
             <h1> Results </h1>
+            <p id ='yelp'></p>
             <div id=listContainer>
 
             </div>
@@ -59,11 +63,12 @@
 
 
                 let data = await d3.csv("new_boston.csv", d3.autotype);
+                console.log(data)
                 const boston = await d3.json("output-6.json");
 
                 let f1ButtonsData = [];
                 f1Label = ['market', 'cb', 'dd', 'restaurant'];
-                f1H2 = ['&#129382', '&#9749', '&#127863', '&#127829'] //emojis
+                f1H2 = ['&#129382', '&#9749', '&#127866', '&#127843'] //emojis
                 f1H3 = ['Markets', 'Cafes & Bakeries', 'Desserts & Drinks', 'Restaurant'] //h3 labels
 
                 for (let i = 0; i < f1Label.length; i++) {
@@ -78,13 +83,14 @@
                     .append('h3').text(d => d.h3)
 
 
-
+                const f2div = d3.select('div#filter2') // add checkboxes to this
                 // reset button
-                const resetButton = d3.select('div#header')
+                const resetButton = d3.select('div#resetButtonContainer')
                 resetButton.append('button').append('text').text("Reset Map");
                 resetButton.on('click', resetMap);
 
                 function resetMap() {
+                    f2div.selectAll('div.checkbox').remove()
                     drawPoints(data);
                     f1Buttons.style('background-color', '#f0f0f0') // reset colors to default
                     table.selectAll('tr').remove();
@@ -115,7 +121,7 @@
 
                     drawPoints(filteredData);
 
-                    const f2div = d3.select('div#filter2')
+                    
                     if (f1Type == 'restaurant' || f1Type == 'dd') {
 
                         checkedLabels = [] // reset global variable filters 
@@ -198,8 +204,8 @@
                 var zips = topojson.feature(boston, boston.objects.Boston_Street_Segments);
                 var zipsMesh = topojson.mesh(boston, boston.objects.Boston_Street_Segments);
 
-                var states = topojson.feature(boston, boston.objects.City_of_Boston_Boundary);
-                var stateMesh = topojson.mesh(boston, boston.objects.City_of_Boston_Boundary);
+                var bos = topojson.feature(boston, boston.objects.City_of_Boston_Boundary);
+                var bosMesh = topojson.mesh(boston, boston.objects.City_of_Boston_Boundary);
 
                 var projection = d3.geoMercator().fitSize([mapWidth, mapHeight], zips);
                 var path = d3.geoPath().projection(projection);
@@ -210,8 +216,8 @@
 
 
                 viewport.append("path")
-                    .datum(stateMesh)
-                    .attr("class", "state-outline")
+                    .datum(bosMesh)
+                    .attr("class", "bos-outline")
                     .attr("d", path);
 
                 viewport.selectAll(".zip").data(zips.features)
@@ -228,14 +234,14 @@
 
 
                 // dot color scale
-                dotColor = d3.scaleOrdinal(['#663300', '#2bda6e', '#cc00ff', '#ff7300']).domain(['cb', 'market', 'dd', 'restaurant'])
+                dotColor = d3.scaleOrdinal(['#804000','#00b300', '#e6b800', 'red']).domain(['cb', 'market', 'dd', 'restaurant'])
 
                 function drawPoints(data) {
                     viewport.selectAll("circle").data(data)
                         .join("circle")
                         .attr("class", "dots")
                         .attr("r", 5)
-                        .attr("opacity", '.5')
+                        .attr("opacity", '.6')
                         .attr("cx", d => projection(d.POSITION)[0])
                         .attr("cy", d => projection(d.POSITION)[1])
                         .attr("fill", d => dotColor(d.filter1));
@@ -248,14 +254,20 @@
 
                 map.call(mapZoom);
 
+                var transformRatio = 1; // a glabal var to save the transparency factor if someone clicks again while zoomed in
+
                 function mapZoomed(event) {
                     viewport.attr("transform", event.transform);
+                    transformRatio = event.transform.k;
 
                     viewport.select(".zip-outline")
                         .style("stroke-width", 0.5 / event.transform.k);
 
                     viewport.selectAll("circle.dots")
-                        .attr("r", 5 / event.transform.k);
+                        .attr("r", 5 / event.transform.k)
+                        // .attr('stroke-width', 2/event.transform.k);
+                    viewport.selectAll('.radius_circle')
+                            .attr('fill-opacity', .5/event.transform.k).style('stroke-opacity',.5)
                 }
 
 
@@ -299,13 +311,14 @@
 
                 }
                 var selected = tenminradius;
+                console.log(selected);
 
                 d3.select('select').on("change", function () {
-                    selected = d3.select("#selectDistance").node().value;
-                    if (selected === "fiveminradius") { selected = fiveminradius }
-                    if (selected === "tenminradius") { selected = tenminradius }
-                    if (selected === "twentyminradius") { selected = twentyminradius }
-                    if (selected === "thirtyminradius") { selected = thirtyminradius }
+                    selectedRadius = d3.select("#selectDistance").node().value;
+                    if (selectedRadius === "fiveminradius") { selected = fiveminradius }
+                    if (selectedRadius === "tenminradius") { selected = tenminradius }
+                    if (selectedRadius === "twentyminradius") { selected = twentyminradius }
+                    if (selectedRadius === "thirtyminradius") { selected = thirtyminradius }
 
                     viewport.selectAll("circle.radius_circle").attr("r", selected);
 
@@ -322,8 +335,11 @@
                         .attr("cx", d3.pointer(event)[0])
                         .attr("cy", d3.pointer(event)[1])
                         .attr("r", selected)
-                        .attr("fill", "grey")
-                        .attr("opacity", 0.5)
+                        .attr("fill", "#08b0e7")
+                        .style("stroke", "#08b0e7")
+                        .style('stroke-width', 1)
+                        .style('stroke-opacity',.5)
+                        .attr("fill-opacity", 0.5/transformRatio)
                         .attr('cursor', 'all-scroll')
                         .call(drag);
 
@@ -356,10 +372,12 @@
 
                 }
 
-                let table = d3.select("#listContainer").append("table");
+                let table= d3.select("#listContainer").append("table");
+                let yelp = d3.select('#yelp')
 
                 function generateRestaurantList(circles) {
-
+                    yelp.text("")
+                    yelp.text("Click on a result below to open its Yelp page!")
                     table.selectAll('tr').remove();
                     table.selectAll('td').remove();
 
@@ -377,9 +395,9 @@
 
                                 previousR = d3.select(kvPairs[key]).attr("r")
 
-                                d3.select(kvPairs[key]).attr("r", previousR * 2);
+                                // d3.select(kvPairs[key]).attr("r", previousR * 2);
                                 d3.select(kvPairs[key]).attr("opacity", .8);
-                                d3.select(kvPairs[key]).attr("border", "black");
+                                d3.select(kvPairs[key]).attr("stroke", "black").attr('stroke-width',4/transformRatio);
 
                                 map.append("text")
                                     .attr("class", "tooltip")
@@ -389,7 +407,8 @@
 
                             })
                             .on("mouseout", function (event) {
-                                d3.select(kvPairs[key]).attr("r", previousR);
+                                d3.select(kvPairs[key]).attr("r", previousR).attr('stroke','none')
+                                
                                 d3.selectAll(".tooltip").remove()
 
                             })
