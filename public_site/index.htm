@@ -28,6 +28,9 @@
                 <div id=filter2>
                 </div>
             </div>
+            <div class="instructions">
+                <p>Click and drag to find a place to eat!</p>
+            </div>
 
             <div id=mapContainer>
                 <svg id="map" width=1000 height=700></svg>
@@ -79,11 +82,14 @@
 
                 // reset button
                 const resetButton = d3.select('div#header')
-                resetButton.append('button').append('text').text("Reset Map").on('click', resetMap);
+                resetButton.append('button').append('text').text("Reset Map");
+                resetButton.on('click', resetMap);
 
                 function resetMap() {
                     drawPoints(data);
                     f1Buttons.style('background-color', '#f0f0f0') // reset colors to default
+                    table.selectAll('tr').remove();
+                    table.selectAll('td').remove();
 
                 }
 
@@ -146,7 +152,11 @@
                 }
                 var checkedLabels = []; // list of stuff that is checked
                 function subFilter() {
+                    table.selectAll('tr').remove();
+                    table.selectAll('td').remove();
 
+
+               
                     // a function that adds and removes points based on the checkboxes input
 
                     f2Label = d3.select(this).datum()
