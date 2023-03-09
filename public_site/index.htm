@@ -29,7 +29,7 @@
                 </div>
             </div>
             <div class="instructions">
-                <p>Click and drag to find a place to eat!</p>
+                <p>Select a distance, then click and drag to find a place to eat!</p>
             </div>
 
             <div id=mapContainer>
@@ -229,14 +229,14 @@
 
 
                 // dot color scale
-                dotColor = d3.scaleOrdinal(['#804000','#00b300', '#ffc800', 'red']).domain(['cb', 'market', 'dd', 'restaurant'])
+                dotColor = d3.scaleOrdinal(['#804000','#00b300', '#e6b800', 'red']).domain(['cb', 'market', 'dd', 'restaurant'])
 
                 function drawPoints(data) {
                     viewport.selectAll("circle").data(data)
                         .join("circle")
                         .attr("class", "dots")
                         .attr("r", 5)
-                        .attr("opacity", '.7')
+                        .attr("opacity", '.75')
                         .attr("cx", d => projection(d.POSITION)[0])
                         .attr("cy", d => projection(d.POSITION)[1])
                         .attr("fill", d => dotColor(d.filter1));

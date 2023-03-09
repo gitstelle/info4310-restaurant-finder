@@ -20,6 +20,10 @@ html {
     max-width: 100%;
     display: flex;
 }
+.instructions p {
+
+    margin-top:2px;
+}
 
 
 .container {
@@ -116,7 +120,7 @@ select#selectDistance {
     display:flex;
     flex-flow: column wrap;
     margin-left:10px;
-    height:160px;
+    height:150px;
 }
 
 fieldset {
