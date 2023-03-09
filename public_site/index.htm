@@ -81,11 +81,14 @@
 
                 // reset button
                 const resetButton = d3.select('div#header')
-                resetButton.append('button').append('text').text("Reset Map").on('click', resetMap);
+                resetButton.append('button').append('text').text("Reset Map");
+                resetButton.on('click', resetMap);
 
                 function resetMap() {
                     drawPoints(data);
                     f1Buttons.style('background-color', '#f0f0f0') // reset colors to default
+                    table.selectAll('tr').remove();
+                    table.selectAll('td').remove();
 
                 }
 
