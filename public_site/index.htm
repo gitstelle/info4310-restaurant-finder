@@ -83,13 +83,14 @@
                     .append('h3').text(d => d.h3)
 
 
-
+                const f2div = d3.select('div#filter2') // add checkboxes to this
                 // reset button
                 const resetButton = d3.select('div#resetButtonContainer')
                 resetButton.append('button').append('text').text("Reset Map");
                 resetButton.on('click', resetMap);
 
                 function resetMap() {
+                    f2div.selectAll('div.checkbox').remove()
                     drawPoints(data);
                     f1Buttons.style('background-color', '#f0f0f0') // reset colors to default
                     table.selectAll('tr').remove();
@@ -120,7 +121,7 @@
 
                     drawPoints(filteredData);
 
-                    const f2div = d3.select('div#filter2')
+                    
                     if (f1Type == 'restaurant' || f1Type == 'dd') {
 
                         checkedLabels = [] // reset global variable filters 
