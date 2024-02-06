@@ -1,5 +1,16 @@
+@font-face {
+    font-family: "Antique Olive";
+    src: url('AntiqueOli-reg.otf');
+}
+
+@font-face {
+    font-family: "Antique Olive";
+    src: url('AntiqueOli-bol.otf');
+    font-weight: bold;
+}
+
 html {
-    font-family: 'Franklin Gothic', Arial, sans-serif;
+    font-family: 'Antique Olive', Arial, sans-serif;
 }
 
 .left_panel {
@@ -49,7 +60,7 @@ h1 {
 }
 
 #header button {
-    font-family:'Franklin Gothic';
+    font-family:'Antique Olive';
     text-transform: uppercase;
     width:150px;
     margin-top: 5px;
