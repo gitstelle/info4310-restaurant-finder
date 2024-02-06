@@ -81,6 +81,7 @@ h1 {
 }
 
 #filter1 button {
+    font-family: 'Antique Olive';
     min-width:90px;
     height: 110px;
     border: 2px solid lightgray;
@@ -115,8 +116,9 @@ button:hover {
 
 #filter1 h3 {
     text-align:center;
+    font-weight: normal;
     margin:0;
-    font-size: 15px;
+    font-size: 14px;
     pointer-events: none;
 }
 
