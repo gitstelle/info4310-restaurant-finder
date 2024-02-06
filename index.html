@@ -240,7 +240,7 @@
                     viewport.selectAll("circle").data(data)
                         .join("circle")
                         .attr("class", "dots")
-                        .attr("r", 5)
+                        .attr("r", 5/transformRatio)
                         .attr("opacity", '.6')
                         .attr("cx", d => projection(d.POSITION)[0])
                         .attr("cy", d => projection(d.POSITION)[1])
